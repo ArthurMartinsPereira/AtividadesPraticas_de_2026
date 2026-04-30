@@ -1,3 +1,24 @@
+import json
+import os
+
+
+def carregar_dados():
+    if os.path.exists("dados.json"):
+        with open("dados.json", "r") as f:
+            dados = json.load(f)
+            return {int(k): v for k, v in dados.items()}
+    else:
+        return {i: 1 for i in range(1, 101)}
+
+
+frequencia = carregar_dados()
+
+
+def salvar_dados(frequencia):
+    with open("dados.json", "w") as f:
+        json.dump(frequencia, f)
+
+
 def jogar():
     print("Pense em um número entre 1 e 100.")
     input("Precione ENTER quando estiver pronto...")
@@ -15,6 +36,8 @@ def jogar():
 
         if resposta == "certo":
             print(f"Acertei em {tentativas} tentativas!")
+            frequencia[palpite] += 1
+            salvar_dados(frequencia)
             break
         elif resposta == "maior":
             baixo = palpite + 1
@@ -23,6 +46,19 @@ def jogar():
         else:
             print("Resposta Inválida!")
 
+        if baixo > alto:
+            print("Hmm... suas respostas foram inconsistentes 😅")
+            break
+
+    print("Top 5 números mais escolhidos:")
+    top = sorted(frequencia.items(), key=lambda x: x[1], reverse=True)[:5]
+    for num, freq in top:
+        print(f"{num}: {freq}")
+
 
 if __name__ == "__main__":
-    jogar()
+    while True:
+        jogar()
+        continuar = input("Jogar novamente? (s/n): ").lower()
+        if continuar != "s":
+            break
