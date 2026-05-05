@@ -1,5 +1,6 @@
 import json
 import os
+import random
 
 
 def carregar_dados():
@@ -28,7 +29,13 @@ def jogar():
     tentativas = 0
 
     while True:
-        palpite = (baixo + alto) // 2
+        possiveis = {k: v for k, v in frequencia.items() if baixo <= k <= alto}
+
+        if random.random() < 0.5:
+            palpite = (baixo + alto) // 2
+        else:
+            palpite = max(possiveis, key=possiveis.get)
+
         tentativas += 1
 
         print(f"Meu palpite é {palpite}")
