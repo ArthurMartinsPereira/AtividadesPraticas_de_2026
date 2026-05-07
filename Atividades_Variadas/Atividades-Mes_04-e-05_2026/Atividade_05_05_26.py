@@ -1,4 +1,6 @@
 # Atividade Sistema de Recomendação de Hábitos Inteligente:
+from sklearn.tree import DecisionTreeClassifier
+
 
 PERIOD_MAP = {
     "manha": 0,
@@ -38,6 +40,36 @@ class LogEntry:
 class HabitTracker:
     def __init__(self):
         self.logs = []
+        self.model = None
+        self.activity_map = {}
+        self.reverse_activity_map = {}
+
+    def train_model(self):
+        x, y, activity_map = self.to_dataset()
+        self.activity_map = activity_map
+        self.reverse_activity_map = {
+            value: key for key, value in activity_map.items()
+        }
+
+        model = DecisionTreeClassifier()
+        model.fit(x, y)
+        self.model = model
+        print("Modelo treinado com sucesso!")
+
+    def recommend(self, energy, mood, period_of_day):
+        if self.model is None:
+            raise ValueError("O modelo ainda não foi treinado.")
+
+        if period_of_day not in PERIOD_MAP:
+            raise ValueError("Período inválido.")
+
+        period_numeric = PERIOD_MAP[period_of_day]
+
+        prediction = self.model.predict([
+            [energy, mood, period_numeric]
+        ])
+        activity_id = prediction[0]
+        return self.reverse_activity_map[activity_id]
 
     def add_entry(self, log):
         self.logs.append(log)
@@ -108,3 +140,31 @@ print("\n=== DATASET ===")
 print("X:", X)
 print("y:", y)
 print("Activity Map:", activity_map)
+print("\n=== TREINANDO MODELO ===")
+tracker.train_model()
+
+print("\n=== RECOMENDAÇÕES ===")
+
+recommendation1 = tracker.recommend(
+    energy=8,
+    mood=7,
+    period_of_day="noite"
+)
+
+print("Recomendação 1:", recommendation1)
+
+recommendation2 = tracker.recommend(
+    energy=4,
+    mood=5,
+    period_of_day="tarde"
+)
+
+print("Recomendação 2:", recommendation2)
+
+recommendation3 = tracker.recommend(
+    energy=9,
+    mood=9,
+    period_of_day="manha"
+)
+
+print("Recomendação 3:", recommendation3)
