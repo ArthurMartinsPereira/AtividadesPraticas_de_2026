@@ -1,7 +1,6 @@
 # Atividade Sistema de Recomendação de Hábitos Inteligente:
 from sklearn.tree import DecisionTreeClassifier
 
-
 PERIOD_MAP = {
     "manha": 0,
     "tarde": 1,
@@ -103,6 +102,47 @@ class HabitTracker:
 
         return X, y, activity_map
 
+    def find_similar_logs(self, energy, mood, period_of_day):
+        similar_logs = []
+
+        for log in self.logs:
+            energy_diff = abs(log.energy - energy)
+            mood_diff = abs(log.mood - mood)
+
+            same_period = log.period_of_day == period_of_day
+
+            if energy_diff <= 2 and mood_diff <= 2 and same_period:
+                similar_logs.append(log)
+
+        return similar_logs
+
+    def explain_recommendation(self, energy, mood, period_of_day):
+        recommendation = self.recommend(
+            energy,
+            mood,
+            period_of_day
+        )
+        simillar_logs = self.find_similar_logs(
+            energy,
+            mood,
+            period_of_day
+        )
+
+        print(f"\n Recomendação: {recommendation}")
+
+        if not simillar_logs:
+            print("Nenhum padrão semelhante encontrado.")
+            return
+
+        if log in simillar_logs:
+            print(
+                f"- Em um caso parecido: "
+                f" {log.activity.name}"
+                f" ({log.period_of_day},"
+                f" mood={log.mood},"
+                f" energy={log.energy})"
+            )
+
     def __repr__(self):
         return f"HabitTracker(total_logs={len(self.logs)})"
 
@@ -114,12 +154,21 @@ class HabitTracker:
 activity1 = Activity("Estudar", "Produtivo", 7)
 activity2 = Activity("Treinar", "Saúde", 8)
 activity3 = Activity("Ler", "Lazer", 4)
+activity4 = Activity("Meditar", "Saúde", 9)
+activity5 = Activity("Trabalhar", "Produtivo", 6)
+activity6 = Activity("Ver Série", "Lazer", 3)
 
 # Criando logs
 log1 = LogEntry(activity1, "noite", 6, 7, 60)
 log2 = LogEntry(activity2, "manha", 8, 9, 45)
 log3 = LogEntry(activity1, "noite", 7, 8, 90)
 log4 = LogEntry(activity3, "tarde", 5, 4, 30)
+log5 = LogEntry(activity4, "manha", 9, 10, 15)
+log6 = LogEntry(activity5, "tarde", 6, 5, 120)
+log7 = LogEntry(activity2, "manha", 7, 8, 50)
+log8 = LogEntry(activity6, "noite", 4, 3, 40)
+log9 = LogEntry(activity1, "tarde", 8, 7, 45)
+log10 = LogEntry(activity3, "noite", 6, 8, 20)
 
 # Criando tracker
 tracker = HabitTracker()
@@ -127,6 +176,12 @@ tracker.add_entry(log1)
 tracker.add_entry(log2)
 tracker.add_entry(log3)
 tracker.add_entry(log4)
+tracker.add_entry(log5)
+tracker.add_entry(log6)
+tracker.add_entry(log7)
+tracker.add_entry(log8)
+tracker.add_entry(log9)
+tracker.add_entry(log10)
 
 # Exibindo logs
 print("=== LOGS ===")
@@ -168,3 +223,12 @@ recommendation3 = tracker.recommend(
 )
 
 print("Recomendação 3:", recommendation3)
+
+# EXPLICAÇÃO DA IA
+print("\n=== EXPLICAÇÃO ===")
+
+tracker.explain_recommendation(
+    energy=8,
+    mood=7,
+    period_of_day="noite"
+)
